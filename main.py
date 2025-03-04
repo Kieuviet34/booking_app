@@ -2,13 +2,12 @@
 from PyQt6.QtWidgets import QApplication
 from PyQt6 import QtWidgets
 import sys
-from GUI.login import Ui_Form  
+from GUI.login import LoginWindow 
 
 def init_app():
     app = QApplication(sys.argv)
     form = QtWidgets.QWidget()
-    ui = Ui_Form()
-    ui.setupUi(form)  
+    ui = LoginWindow()  
     form.show()
     sys.exit(app.exec())
 
