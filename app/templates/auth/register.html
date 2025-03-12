@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Đăng ký{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Đăng ký</h2>
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <form method="POST">
+      <!-- Form group Username -->
+      <div class="mb-3">
+        <label for="username" class="form-label">Tên đăng nhập</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+      </div>
+      <!-- Form group Password -->
+      <div class="mb-3">
+        <label for="password" class="form-label">Mật khẩu</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+      </div>
+      <!-- Lựa chọn role (nếu cần) -->
+      <div class="mb-3">
+        <label for="role" class="form-label">Vai trò</label>
+        <select class="form-select" id="role" name="role">
+          <option value="patient">Bệnh nhân</option>
+          <option value="doctor">Bác sĩ</option>
+          <option value="admin">Quản trị</option>
+        </select>
+      </div>
+      <!-- Submit button -->
+      <button type="submit" class="btn btn-primary w-100">Đăng ký</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
