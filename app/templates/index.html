@@ -5,7 +5,11 @@
 <div class="text-center">
   <h1 class="mb-4">Hệ thống Đặt lịch Bệnh viện</h1>
   <p>Chào mừng bạn đến với hệ thống!</p>
-  <a href="/auth/login" class="btn btn-primary me-2">Đăng nhập</a>
-  <a href="/auth/register" class="btn btn-outline-primary">Đăng ký</a>
+  <div class="btn-group" role="group">
+    <a href="{{ url_for('patient_bp.dashboard') }}" class="btn btn-primary">Dashboard Khách hàng</a>
+    <a href="{{ url_for('staff_bp.dashboard') }}" class="btn btn-secondary">Dashboard Nhân viên</a>
+    <a href="{{ url_for('appointment_bp.dashboard') }}" class="btn btn-success">Dashboard Lịch hẹn</a>
+    <a href="{{ url_for('finance_bp.dashboard') }}" class="btn btn-info">Dashboard Thu chi</a>
+  </div>
 </div>
 {% endblock %}

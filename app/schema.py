@@ -1,6 +1,6 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from app.models.patient import Patient
-from app.models.doctor import Doctor
+from app.models.staff import Doctor
 from app.models.appointment import Appointment
 from app.models.user import User
 

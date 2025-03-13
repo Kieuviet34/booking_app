@@ -1,69 +1,45 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Hospital Appointment{% endblock %}</title>
-    
-    <!-- Bootstrap 5 CSS (CDN) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom CSS (nếu cần) -->
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> -->
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     {% block head %}{% endblock %}
   </head>
   <body class="d-flex flex-column min-vh-100">
-    <!-- HEADER / NAVBAR -->
+    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">Hospital Appointment</a>
+        <a class="navbar-brand" href="{{ url_for('main_bp.index') }}">Hospital Appointment</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <!-- Các link điều hướng cơ bản -->
-            <li class="nav-item">
-              <a class="nav-link" href="/">Trang chủ</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/auth/login">Đăng nhập</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/auth/register">Đăng ký</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/patient/dashboard">Bệnh nhân</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/doctor/dashboard">Bác sĩ</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/dashboard">Quản trị</a>
-            </li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('appointment_bp.dashboard') }}">Lịch hẹn</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('patient_bp.dashboard') }}">Khách hàng</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('finance_bp.dashboard') }}">Thu chi</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('staff_bp.dashboard') }}">Nhân viên</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth_bp.login') }}">Đăng nhập</a></li>
           </ul>
         </div>
       </div>
     </nav>
-
+    
     <!-- MAIN CONTENT -->
     <main class="container my-4 flex-grow-1">
-      {% block content %}
-      {% endblock %}
+      {% block content %}{% endblock %}
     </main>
-
+    
     <!-- FOOTER -->
     <footer class="bg-light text-center py-3 mt-auto">
       <div class="container">
         <span class="text-muted">&copy; 2025 Hospital Appointment System</span>
       </div>
     </footer>
-
-    <!-- Bootstrap JS Bundle (CDN) -->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block scripts %}{% endblock %}
   </body>

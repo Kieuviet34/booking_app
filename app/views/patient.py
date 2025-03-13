@@ -1,35 +1,46 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.models.patient import Patient
 from app import db
 
-patient_bp = Blueprint('patient', __name__, template_folder='../templates/patient')
+patient_bp = Blueprint('patient_bp', __name__)
 
 @patient_bp.route('/dashboard')
 def dashboard():
-    # Lấy thông tin bệnh nhân dựa trên session (user_id)
-    patient_id = session.get('user_id')
-    if patient_id:
-        patient = Patient.query.get(patient_id)
-        appointments = patient.appointments if patient else []
-    else:
-        appointments = []
-        flash("Vui lòng đăng nhập với tư cách bệnh nhân để truy cập dashboard.", "warning")
-    return render_template('dashboard.html', appointments=appointments)
+    patients = Patient.query.all()
+    return render_template('patient/dashboard.html', patients=patients)
 
-@patient_bp.route('/profile', methods=['GET', 'POST'])
-def profile():
-    patient_id = session.get('user_id')
-    if not patient_id:
-        flash("Vui lòng đăng nhập để truy cập hồ sơ.", "warning")
-        return redirect(url_for('auth.login'))
-    patient = Patient.query.get(patient_id)
+@patient_bp.route('/add', methods=['GET', 'POST'])
+def add_patient():
     if request.method == 'POST':
-        # Cập nhật thông tin bệnh nhân
-        patient.name = request.form.get('name')
-        patient.email = request.form.get('email')
-        patient.contact_number = request.form.get('contact_number')
-        # Cập nhật các trường khác nếu cần...
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        email = request.form.get('email')
+        address = request.form.get('address')
+        note = request.form.get('note')
+        new_patient = Patient(name=name, phone=phone, email=email, address=address, note=note)
+        db.session.add(new_patient)
         db.session.commit()
-        flash("Cập nhật hồ sơ thành công.", "success")
-        return redirect(url_for('patient.profile'))
-    return render_template('profile.html', patient=patient)
+        flash("Bệnh nhân được thêm thành công", "success")
+        return redirect(url_for('patient_bp.dashboard'))
+    return render_template('patient/add_patient.html')
+
+@patient_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit_patient(id):
+    patient = Patient.query.get_or_404(id)
+    if request.method == 'POST':
+        patient.name = request.form.get('name')
+        patient.phone = request.form.get('phone')
+        patient.email = request.form.get('email')
+        patient.address = request.form.get('address')
+        patient.note = request.form.get('note')
+        db.session.commit()
+        flash("Thông tin bệnh nhân đã được cập nhật", "success")
+        return redirect(url_for('patient_bp.dashboard'))
+    return render_template('patient/edit_patient.html', patient=patient)
+
+@patient_bp.route('/delete/<int:id>', methods=['DELETE'])
+def delete_patient(id):
+    patient = Patient.query.get_or_404(id)
+    db.session.delete(patient)
+    db.session.commit()
+    return '', 204
