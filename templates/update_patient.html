@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Sửa bệnh nhân{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Sửa thông tin bệnh nhân</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="name" class="form-label">Tên</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ patient[1] }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Số điện thoại</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ patient[2] }}">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ patient[3] }}">
+        </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Địa chỉ</label>
+            <input type="text" class="form-control" id="address" name="address" value="{{ patient[4] }}">
+        </div>
+        <div class="mb-3">
+            <label for="note" class="form-label">Ghi chú</label>
+            <textarea class="form-control" id="note" name="note">{{ patient[5] }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+    </form>
+</div>
+{% endblock %}

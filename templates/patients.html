@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Quản lý bệnh nhân{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Quản lý bệnh nhân</h1>
+    <a href="{{ url_for('add_patient') }}" class="btn btn-primary mb-3">Thêm bệnh nhân mới</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Địa chỉ</th>
+                <th>Ghi chú</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td>{{ patient[0] }}</td>
+                <td>{{ patient[1] }}</td>
+                <td>{{ patient[2] }}</td>
+                <td>{{ patient[3] }}</td>
+                <td>{{ patient[4] }}</td>
+                <td>{{ patient[5] }}</td>
+                <td>
+                    <a href="{{ url_for('update_patient', id=patient[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
+                    <a href="{{ url_for('delete_patient', id=patient[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}a

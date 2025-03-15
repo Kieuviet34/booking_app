@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% block title %}Xếp lịch{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendar-container {
+        position: relative;
+        width: 100%;
+        height: 800px;
+        overflow: auto;
+    }
+    .timetable {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .time-label {
+        width: 100px;
+        border: 1px solid #ddd;
+        text-align: center;
+        font-weight: bold;
+        background-color: #e9ecef;
+        position: sticky;
+        left: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+    .day-header {
+        height: 40px;
+        border: 1px solid #ddd;
+        text-align: center;
+        font-weight: bold;
+        background-color: #007bff;
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+    .closed-column {
+        background-color: #f0f0f0;
+        color: #888;
+    }
+    .cell {
+        position: relative;
+        height: 60px; 
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    .appointment-block {
+        position: absolute;
+        padding: 5px;
+        border-radius: 5px;
+        z-index: 2;
+        width: 100%;
+    }
+    .appointment-new { background-color: #007bff; }
+    .appointment-confirmed { background-color: #28a745; }
+    .appointment-waiting { background-color: #ffc107; color: #212529; }
+    .appointment-in_progress { background-color: #17a2b8; }
+    .appointment-done { background-color: #6c757d; }
+    .appointment-cancelled { background-color: #dc3545; }
+
+    .appointment-block input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        color: inherit;
+        font-weight: bold;
+        padding: 0;
+    }
+    .appointment-block input:focus { outline: none; }
+    .appointment-block small {
+        display: block;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Xếp lịch theo chuyên khoa</h1>
+
+    <!-- Form lọc: chọn ngày và chuyên khoa -->
+    <div class="mb-3">
+        <form action="{{ url_for('schedule') }}" method="GET" class="d-flex align-items-center gap-3">
+            <div class="form-group">
+                <label for="date" class="form-label">Chọn ngày bắt đầu</label>
+                <input type="date" class="form-control" id="date" name="date"
+                       value="{{ selected_date }}" onchange="this.form.submit()">
+            </div>
+            <div class="form-group">
+                <label for="department" class="form-label">Chuyên khoa</label>
+                <select class="form-select" id="department" name="department" onchange="this.form.submit()">
+                    <option value="Khoa Khám bệnh đa khoa" {% if selected_department == 'Khoa Khám bệnh đa khoa' %}selected{% endif %}>
+                        Khoa Khám bệnh đa khoa
+                    </option>
+                    <option value="Khoa Khám theo yêu cầu" {% if selected_department == 'Khoa Khám theo yêu cầu' %}selected{% endif %}>
+                        Khoa Khám theo yêu cầu
+                    </option>
+                    <option value="Trung tâm khám sức khỏe định kỳ" {% if selected_department == 'Trung tâm khám sức khỏe định kỳ' %}selected{% endif %}>
+                        Trung tâm khám sức khỏe định kỳ
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="doctor_id" class="form-label">Chọn bác sĩ</label>
+                <select class="form-select" id="doctor_id" name="doctor_id" onchange="this.form.submit()">
+                    <option value="">Chọn bác sĩ</option>
+                    {% for d in doctors %}
+                    <option value="{{ d[0] }}" {% if doctor_id == d[0]|string %}selected{% endif %}>
+                        {{ d[1] }} ({{ d[2] }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Form xếp lịch thủ công (tạo mới lịch hẹn) -->
+    <div class="mb-3">
+        <h5>Xếp lịch thủ công</h5>
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="appointment_name" class="form-label">Tên lịch hẹn</label>
+                    <input type="text" class="form-control" id="appointment_name" name="appointment_name" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="symptoms" class="form-label">Triệu chứng</label>
+                    <input type="text" class="form-control" id="symptoms" name="symptoms">
+                </div>
+                <div class="col-md-3">
+                    <label for="doctor_id_form" class="form-label">Bác sĩ</label>
+                    <select class="form-select" id="doctor_id_form" name="doctor_id" required>
+                        <option value="">Chọn bác sĩ</option>
+                        {% for doc in doctors %}
+                        <option value="{{ doc[0] }}">{{ doc[1] }} ({{ doc[2] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="patient_id" class="form-label">Bệnh nhân</label>
+                    <select class="form-select" id="patient_id" name="patient_id" required>
+                        <option value="">Chọn bệnh nhân</option>
+                        {% for p in patients %}
+                        <option value="{{ p[0] }}">{{ p[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="start_time" class="form-label">Thời gian bắt đầu</label>
+                    <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="end_time" class="form-label">Thời gian kết thúc</label>
+                    <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                </div>
+                <div class="col-md-3 mt-4">
+                    <button type="submit" class="btn btn-primary">Xếp lịch</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bảng thời khóa biểu -->
+    {% set pixel_factor = 2 %} {# 1 phút = 2px #}
+    <div class="calendar-container">
+        <table class="timetable">
+            <thead>
+                <tr>
+                    <th class="day-header time-label">Thời gian</th>
+                    {% for day in days_of_week %}
+                    <th class="day-header {% if not day.is_open %}closed-column{% endif %}">
+                        {{ day.display }}
+                        {% if not day.is_open %}
+                        <br><small>Không khám</small>
+                        {% endif %}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for hour in range(6, 18) %} {# Giả sử hiển thị từ 6h đến 18h #}
+                <!-- Row 1: :00 - :30 -->
+                <tr>
+                    <td class="time-label">{{ hour }}:00 - {{ hour }}:30</td>
+                    {% for day in days_of_week %}
+                    {% set cell_start = day.date|datetime_combine(hour, 0) %}
+                    {% set cell_end   = day.date|datetime_combine(hour, 30) %}
+                    <td class="cell {% if not day.is_open %}closed-column{% endif %}">
+                        {% if day.is_open %}
+                        {% for appt in appointments %}
+                            {% set appt_start = appt[5] %}
+                            {% set appt_end   = appt[6] %}
+                            {% if appt_end > cell_start and appt_start < cell_end %}
+                                {% set overlap_start = appt_start if appt_start > cell_start else cell_start %}
+                                {% set overlap_end   = appt_end   if appt_end   < cell_end   else cell_end %}
+                                {% set start_offset = (overlap_start - cell_start).total_seconds() / 60 %}
+                                {% set duration     = (overlap_end - overlap_start).total_seconds() / 60 %}
+                                {% set top_px    = start_offset * pixel_factor %}
+                                {% set height_px = duration * pixel_factor %}
+                                <div class="appointment-block appointment-{{ appt[7] }}"
+                                     style="top: {{ top_px }}px; height: {{ height_px }}px;"
+                                     data-bs-toggle="modal"
+                                     data-bs-target="#viewAppointmentModal-{{ appt[0] }}">
+                                    <!-- Input để nhập tên lịch hẹn -->
+                                    <input type="text" value="{{ appt[2] }}" class="form-control form-control-sm" />
+                                    <!-- Hiển thị triệu chứng (nếu có) -->
+                                    {% if appt[8] %}
+                                    <small>{{ appt[8] }}</small>
+                                    {% endif %}
+                                    <!-- Hiển thị tên bác sĩ (nếu có) -->
+                                    {% if appt[4] %}
+                                    <small>- {{ appt[4] }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                <!-- Row 2: :30 - :00 của giờ kế tiếp -->
+                <tr>
+                    <td class="time-label">{{ hour }}:30 - {{ hour + 1 }}:00</td>
+                    {% for day in days_of_week %}
+                    {% set cell_start = day.date|datetime_combine(hour, 30) %}
+                    {% set cell_end   = day.date|datetime_combine(hour+1, 0) %}
+                    <td class="cell {% if not day.is_open %}closed-column{% endif %}">
+                        {% if day.is_open %}
+                        {% for appt in appointments %}
+                            {% set appt_start = appt[5] %}
+                            {% set appt_end   = appt[6] %}
+                            {% if appt_end > cell_start and appt_start < cell_end %}
+                                {% set overlap_start = appt_start if appt_start > cell_start else cell_start %}
+                                {% set overlap_end   = appt_end   if appt_end   < cell_end   else cell_end %}
+                                {% set start_offset = (overlap_start - cell_start).total_seconds() / 60 %}
+                                {% set duration     = (overlap_end - overlap_start).total_seconds() / 60 %}
+                                {% set top_px    = start_offset * pixel_factor %}
+                                {% set height_px = duration * pixel_factor %}
+                                <div class="appointment-block appointment-{{ appt[7] }}"
+                                     style="top: {{ top_px }}px; height: {{ height_px }}px;"
+                                     data-bs-toggle="modal"
+                                     data-bs-target="#viewAppointmentModal-{{ appt[0] }}">
+                                    <input type="text" value="{{ appt[2] }}" class="form-control form-control-sm" />
+                                    {% if appt[8] %}
+                                    <small>{{ appt[8] }}</small>
+                                    {% endif %}
+                                    {% if appt[4] %}
+                                    <small>- {{ appt[4] }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal hiển thị chi tiết lịch hẹn -->
+{% for appt in appointments %}
+<div class="modal fade" id="viewAppointmentModal-{{ appt[0] }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông tin lịch hẹn: {{ appt[2] }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% if appt[7] == 'new' %}
+                <form method="POST">
+                    <input type="hidden" name="appointment_id" value="{{ appt[0] }}">
+                    <input type="hidden" name="patient_id" value="{{ appt[1] }}">
+                    <div class="mb-3">
+                        <label for="doctor_id_modal" class="form-label">Chọn bác sĩ</label>
+                        <select class="form-select" id="doctor_id_modal" name="doctor_id" required>
+                            <option value="">Chọn bác sĩ</option>
+                            {% for doc in doctors %}
+                            <option value="{{ doc[0] }}" {% if doc[0] == appt[3] %}selected{% endif %}>
+                                {{ doc[1] }} ({{ doc[2] }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_time_modal" class="form-label">Thời gian bắt đầu</label>
+                        <input type="datetime-local" class="form-control" id="start_time_modal" name="start_time"
+                               value="{{ appt[5]|datetime_local }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_time_modal" class="form-label">Thời gian kết thúc</label>
+                        <input type="datetime-local" class="form-control" id="end_time_modal" name="end_time"
+                               value="{{ appt[6]|datetime_local }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Xếp lịch</button>
+                </form>
+                {% else %}
+                <div>
+                    <p><strong>Bệnh nhân:</strong> {{ appt[2] }}</p>
+                    <p><strong>Bác sĩ:</strong> {{ appt[4] if appt[4] else "Chưa có bác sĩ" }}</p>
+                    <p><strong>Thời gian bắt đầu:</strong> {{ appt[5]|datetime_local }}</p>
+                    <p><strong>Thời gian kết thúc:</strong> {{ appt[6]|datetime_local }}</p>
+                    <p><strong>Trạng thái:</strong> {{ appt[7]|capitalize }}</p>
+                    <p><strong>Triệu chứng:</strong> {{ appt[8] if appt[8] else "Không có" }}</p>
+                    <p><strong>Ghi chú:</strong> {{ appt[9] if appt[9] else "Không có" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Sửa lỗi backdrop khi đóng modal
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function () {
+            document.body.classList.remove('modal-open');
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+        });
+    });
+</script>
+{% endblock %}

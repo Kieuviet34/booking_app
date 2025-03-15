@@ -1,5 +1,7 @@
-create database booking_app;
-use booking_app;
+CREATE DATABASE booking_app;
+USE booking_app;
+
+-- Bảng users (giữ nguyên)
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255) UNIQUE NOT NULL,
@@ -11,20 +13,22 @@ CREATE TABLE users (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 2. Bảng staff (nếu cần quản lý đội ngũ bác sĩ/phụ tá riêng)
---   - Nếu phòng khám chỉ có 1 bác sĩ duy nhất, có thể bỏ bảng này
+-- Bảng staff (thêm role và specialty)
 CREATE TABLE staff (
   id INT AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(255) NOT NULL,
   phone VARCHAR(20),
   email VARCHAR(255),
   address VARCHAR(255),
+  role VARCHAR(50) NOT NULL,  -- Ví dụ: 'doctor', 'nurse', 'assistant'
+  specialty VARCHAR(50),      -- Chuyên khoa, chỉ áp dụng cho bác sĩ (ví dụ: 'noi_khoa', 'ngoai_khoa', 'san_khoa')
   status VARCHAR(50) DEFAULT 'active',  -- 'active' hoặc 'inactive'
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted TINYINT DEFAULT 0
 );
 
--- 3. Bảng patients (bệnh nhân/khách hàng)
+-- Bảng patients (giữ nguyên)
 CREATE TABLE patients (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -33,19 +37,19 @@ CREATE TABLE patients (
   address VARCHAR(255),
   note TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted TINYINT DEFAULT 0
 );
 
--- 4. Bảng appointments (lịch hẹn)
+-- Bảng appointments (thêm symptoms)
 CREATE TABLE appointments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_id INT NOT NULL,
-  -- doctor_id hoặc staff_id nếu muốn gán cho 1 bác sĩ/phụ tá cụ thể
-  staff_id INT,  -- Có thể NULL nếu chỉ có 1 bác sĩ duy nhất
+  staff_id INT,  -- Có thể NULL nếu chưa xếp bác sĩ
   start_time DATETIME NOT NULL,
   end_time DATETIME NOT NULL,
-  status VARCHAR(50) DEFAULT 'new', 
-    -- Ví dụ: 'new', 'confirmed', 'waiting', 'in_progress', 'done', 'cancelled'
+  status VARCHAR(50) DEFAULT 'new',  -- 'new', 'confirmed', 'waiting', 'in_progress', 'done', 'cancelled'
+  symptoms TEXT,  -- Triệu chứng của bệnh nhân (ví dụ: 'ho', 'sot', 'dau_bung')
   note TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -53,12 +57,32 @@ CREATE TABLE appointments (
   FOREIGN KEY (staff_id) REFERENCES staff(id)
 );
 
--- 5. Bảng finances (quản lý thu chi)
+-- Bảng work_schedules (lịch làm việc của nhân viên)
+CREATE TABLE work_schedules (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  staff_id INT NOT NULL,
+  start_time DATETIME NOT NULL,
+  end_time DATETIME NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (staff_id) REFERENCES staff(id)
+);
+
+-- Bảng specialty_symptom_mapping (ánh xạ triệu chứng với chuyên khoa - tùy chọn)
+CREATE TABLE specialty_symptom_mapping (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  specialty VARCHAR(50) NOT NULL,
+  symptom VARCHAR(255) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Bảng finances (giữ nguyên)
 CREATE TABLE finances (
   id INT AUTO_INCREMENT PRIMARY KEY,
   transaction_date DATETIME NOT NULL,
   amount DECIMAL(12, 2) NOT NULL,
-  type VARCHAR(20) NOT NULL,   -- 'income' or 'expense'
+  type VARCHAR(20) NOT NULL,  -- 'income' or 'expense'
   description VARCHAR(255),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

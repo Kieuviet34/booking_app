@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Thêm lịch hẹn{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Thêm lịch hẹn mới</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="patient_id" class="form-label">Bệnh nhân</label>
+            <select class="form-select" id="patient_id" name="patient_id" required>
+                {% for patient in patients %}
+                <option value="{{ patient[0] }}">{{ patient[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="staff_id" class="form-label">Nhân viên</label>
+            <select class="form-select" id="staff_id" name="staff_id">
+                <option value="">Không chọn</option>
+                {% for staff in staff_list %}
+                <option value="{{ staff[0] }}">{{ staff[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="start_time" class="form-label">Thời gian bắt đầu</label>
+            <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+        </div>
+        <div class="mb-3">
+            <label for="end_time" class="form-label">Thời gian kết thúc</label>
+            <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">Trạng thái</label>
+            <select class="form-select" id="status" name="status">
+                <option value="new">Mới</option>
+                <option value="confirmed">Đã xác nhận</option>
+                <option value="waiting">Đang chờ</option>
+                <option value="in_progress">Đang thực hiện</option>
+                <option value="done">Hoàn thành</option>
+                <option value="cancelled">Đã hủy</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="note" class="form-label">Ghi chú</label>
+            <textarea class="form-control" id="note" name="note"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+    </form>
+</div>
+{% endblock %}

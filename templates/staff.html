@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Quản lý nhân viên{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Quản lý nhân viên</h1>
+    <a href="{{ url_for('add_staff') }}" class="btn btn-primary mb-3">Thêm nhân viên mới</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Họ tên</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Địa chỉ</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in staff %}
+            <tr>
+                <td>{{ employee[0] }}</td>
+                <td>{{ employee[1] }}</td>
+                <td>{{ employee[2] }}</td>
+                <td>{{ employee[3] }}</td>
+                <td>{{ employee[4] }}</td>
+                <td>{{ employee[5] }}</td>
+                <td>
+                    <a href="{{ url_for('update_staff', id=employee[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
+                    <a href="{{ url_for('delete_staff', id=employee[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

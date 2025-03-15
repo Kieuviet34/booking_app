@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Sửa nhân viên{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Sửa thông tin nhân viên</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="full_name" class="form-label">Họ tên</label>
+            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ staff[1] }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Số điện thoại</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ staff[2] }}">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ staff[3] }}">
+        </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Địa chỉ</label>
+            <input type="text" class="form-control" id="address" name="address" value="{{ staff[4] }}">
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">Trạng thái</label>
+            <select class="form-select" id="status" name="status">
+                <option value="active" {% if staff[5] == 'active' %}selected{% endif %}>Hoạt động</option>
+                <option value="inactive" {% if staff[5] == 'inactive' %}selected{% endif %}>Không hoạt động</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+    </form>
+</div>
+{% endblock %}
