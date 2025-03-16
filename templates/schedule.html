@@ -139,7 +139,6 @@
         </form>
     </div>
     
-    <!-- Form xếp lịch thủ công: tạo mới lịch hẹn -->
     <div class="mb-3">
         <h5>Xếp lịch thủ công</h5>
         <form method="POST">
@@ -166,7 +165,6 @@
                     <select class="form-select" id="patient_id" name="patient_id" required>
                         <option value="">Chọn bệnh nhân</option>
                         {% for p in patients %}
-                        <!-- Sử dụng data-note để hiển thị bệnh án khi hover -->
                         <option value="{{ p[0] }}" class="patient-option" data-note="{{ p[2] }}">
                             {{ p[1] }}
                         </option>
@@ -188,8 +186,7 @@
         </form>
     </div>
     
-    <!-- Biểu đồ lịch -->
-    {% set pixel_factor = 2 %} {# 1 phút = 2px #}
+    {% set pixel_factor = 2 %} <!-- 1 phút chia thành 2px -->
     <div class="calendar-container">
         <table class="timetable">
             <thead>
@@ -207,7 +204,7 @@
             </thead>
             <tbody>
                 {% for hour in range(6, 18) %}
-                <!-- Row: :00 - :30 -->
+                <!-- Row: :00 - :30  chia thành 30 phút 1 row-->
                 <tr>
                     <td class="time-label">{{ hour }}:00 - {{ hour }}:30</td>
                     {% for day in days_of_week %}
@@ -285,7 +282,6 @@
     </div>
 </div>
 
-<!-- Modal hiển thị chi tiết lịch hẹn -->
 {% for appt in appointments %}
 <div class="modal fade" id="viewAppointmentModal-{{ appt[0] }}" tabindex="-1">
     <div class="modal-dialog">
@@ -310,7 +306,6 @@
 
 {% block extra_js %}
 <script>
-    // Sửa lỗi backdrop khi đóng modal
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('hidden.bs.modal', function () {
             document.body.classList.remove('modal-open');

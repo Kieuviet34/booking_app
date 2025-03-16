@@ -1,4 +1,117 @@
 {% extends "base.html" %}
-{%block content%}
-    
-{%endblock%}
+{% block title %}Quản lý thu chi{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Quản lý thu chi</h1>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <a href="{{ url_for('finance.add_finance') }}" class="btn btn-primary">Thêm giao dịch mới</a>
+            <button id="exportExcel" class="btn btn-success ms-2">Xuất Excel</button>
+        </div>
+        <div class="col-md-6 text-end">
+            <input type="text" id="searchInput" class="form-control w-50 d-inline-block" placeholder="Tìm kiếm theo mô tả, loại, số tiền...">
+        </div>
+    </div>
+    <table class="table table-striped" id="financeTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ngày giao dịch</th>
+                <th>Số tiền</th>
+                <th>Loại</th>
+                <th>Mô tả</th>
+                <th>Ngày tạo</th>
+                <th>Ngày cập nhật</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="financeBody">
+            {% for finance in finances %}
+            <tr>
+                <td>{{ finance[0] }}</td>
+                <td>{{ finance[1] | strftime }}</td>
+                <td>{{ finance[2] }}</td>
+                <td>{{ finance[3] }}</td>
+                <td>{{ finance[4] }}</td>
+                <td>{{ finance[5] | strftime }}</td>
+                <td>{{ finance[6] | strftime }}</td>
+                <td>
+                    <a href="{{ url_for('finance.update_finance', id=finance[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
+                    <a href="{{ url_for('finance.delete_finance', id=finance[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.trim();
+
+    fetch("{{ url_for('finance.search_finance') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tbody = document.getElementById('financeBody');
+        tbody.innerHTML = '';
+
+        if (data.finances && data.finances.length > 0) {
+            data.finances.forEach(finance => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${finance[0]}</td>
+                    <td>${new Date(finance[1]).toLocaleString()}</td>
+                    <td>${finance[2]}</td>
+                    <td>${finance[3]}</td>
+                    <td>${finance[4]}</td>
+                    <td>${new Date(finance[5]).toLocaleString()}</td>
+                    <td>${new Date(finance[6]).toLocaleString()}</td>
+                    <td>
+                        <a href="{{ url_for('finance.update_finance', id=0) }}".replace('0', finance[0]) class="btn btn-sm btn-warning">Sửa</a>
+                        <a href="{{ url_for('finance.delete_finance', id=0) }}".replace('0', finance[0]) class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Không tìm thấy giao dịch nào</td></tr>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const tbody = document.getElementById('financeBody');
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Có lỗi xảy ra khi tìm kiếm</td></tr>';
+    });
+});
+
+document.getElementById('exportExcel').addEventListener('click', function() {
+    fetch("{{ url_for('finance.export_finance') }}")
+    .then(response => response.json())
+    .then(data => {
+        const ws = XLSX.utils.json_to_sheet(data.finances.map(f => ({
+            'ID': f[0],
+            'Ngày giao dịch': new Date(f[1]).toLocaleString(),
+            'Số tiền': f[2],
+            'Loại': f[3],
+            'Mô tả': f[4],
+            'Ngày tạo': new Date(f[5]).toLocaleString(),
+            'Ngày cập nhật': new Date(f[6]).toLocaleString()
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Finances");
+        XLSX.writeFile(wb, "finances_export.xlsx");
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi xuất Excel');
+    });
+});
+</script>
+{% endblock %}

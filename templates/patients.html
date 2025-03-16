@@ -3,8 +3,15 @@
 {% block content %}
 <div class="container-fluid">
     <h1 class="mt-4">Quản lý bệnh nhân</h1>
-    <a href="{{ url_for('patients.add_patient') }}" class="btn btn-primary mb-3">Thêm bệnh nhân mới</a>
-    <table class="table table-striped">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <a href="{{ url_for('patients.add_patient') }}" class="btn btn-primary">Thêm bệnh nhân mới</a>
+        </div>
+        <div class="col-md-6 text-end">
+            <input type="text" id="searchInput" class="form-control w-50 d-inline-block" placeholder="Tìm kiếm theo tên, số điện thoại, email...">
+        </div>
+    </div>
+    <table class="table table-striped" id="patientsTable">
         <thead>
             <tr>
                 <th>ID</th>
@@ -16,7 +23,7 @@
                 <th>Hành động</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="patientsBody">
             {% for patient in patients %}
             <tr>
                 <td>{{ patient[0] }}</td>
@@ -34,4 +41,49 @@
         </tbody>
     </table>
 </div>
-{% endblock %}a
+
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.trim();
+
+    fetch("{{ url_for('patients.search_patients') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tbody = document.getElementById('patientsBody');
+        tbody.innerHTML = '';
+
+        if (data.patients && data.patients.length > 0) {
+            data.patients.forEach(patient => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${patient[0]}</td>
+                    <td>${patient[1]}</td>
+                    <td>${patient[2]}</td>
+                    <td>${patient[3]}</td>
+                    <td>${patient[4]}</td>
+                    <td>${patient[5]}</td>
+                    <td>
+                        <a href="{{ url_for('patients.update_patient', id=0) }}".replace('0', patient[0]) class="btn btn-sm btn-warning">Sửa</a>
+                        <a href="{{ url_for('patients.delete_patient', id=0) }}".replace('0', patient[0]) class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">Không tìm thấy bệnh nhân nào</td></tr>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const tbody = document.getElementById('patientsBody');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Có lỗi xảy ra khi tìm kiếm</td></tr>';
+    });
+});
+</script>
+{% endblock %}

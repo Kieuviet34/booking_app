@@ -1,7 +1,4 @@
--- Xóa database cũ nếu có
 DROP DATABASE IF EXISTS booking_app;
-
--- Tạo database mới
 CREATE DATABASE booking_app;
 USE booking_app;
 
@@ -9,7 +6,7 @@ USE booking_app;
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,  -- Lưu mật khẩu đã băm
+  password VARCHAR(255) NOT NULL, 
   phone VARCHAR(20),
   email VARCHAR(255),
   address VARCHAR(255),
@@ -17,7 +14,7 @@ CREATE TABLE users (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Bảng specialties (lưu thông tin chuyên khoa riêng)
+-- Bảng specialties 
 CREATE TABLE specialties (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50) NOT NULL,
@@ -26,7 +23,7 @@ CREATE TABLE specialties (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Bảng staff (sử dụng specialty_id tham chiếu đến bảng specialties)
+-- Bảng staff 
 CREATE TABLE staff (
   id INT AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(255) NOT NULL,
@@ -34,7 +31,7 @@ CREATE TABLE staff (
   email VARCHAR(255),
   address VARCHAR(255),
   role VARCHAR(50) NOT NULL,  -- Ví dụ: 'doctor', 'nurse', 'assistant'
-  specialty_id INT,           -- Khóa ngoại đến bảng specialties
+  specialty_id INT,           
   status VARCHAR(50) DEFAULT 'active',  -- 'active' hoặc 'inactive'
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -55,7 +52,7 @@ CREATE TABLE patients (
   is_deleted TINYINT DEFAULT 0
 );
 
--- Bảng appointments (thêm cột symptoms và note dùng lưu tên lịch hẹn)
+-- Bảng appointments 
 CREATE TABLE appointments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_id INT NOT NULL,
@@ -64,7 +61,7 @@ CREATE TABLE appointments (
   end_time DATETIME NOT NULL,
   status VARCHAR(50) DEFAULT 'new',  -- 'new', 'confirmed', 'waiting', 'in_progress', 'done', 'cancelled'
   symptoms TEXT,  -- Triệu chứng của bệnh nhân
-  note TEXT,      -- Dùng để lưu tên lịch hẹn hoặc ghi chú khác
+  note TEXT,      
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (patient_id) REFERENCES patients(id),
@@ -96,7 +93,7 @@ CREATE TABLE finances (
   id INT AUTO_INCREMENT PRIMARY KEY,
   transaction_date DATETIME NOT NULL,
   amount DECIMAL(12, 2) NOT NULL,
-  type VARCHAR(20) NOT NULL,  -- 'income' or 'expense'
+  type VARCHAR(20) NOT NULL,  
   description VARCHAR(255),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

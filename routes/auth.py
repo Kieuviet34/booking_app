@@ -4,7 +4,6 @@ import bcrypt
 
 auth_bp = Blueprint('auth', __name__)
 
-# Giả lập MySQL từ app chính
 mysql = MySQL()
 
 def admin_required(f):

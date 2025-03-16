@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
 
 patients_bp = Blueprint('patients', __name__)
@@ -18,7 +18,7 @@ def admin_required(f):
 @admin_required
 def patients():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT id, name, note FROM patients WHERE is_deleted = 0")
+    cur.execute("SELECT id, name, phone, email, address, note FROM patients WHERE is_deleted = 0")
     patients = cur.fetchall()
     cur.close()
     return render_template('patients.html', patients=patients)
@@ -74,3 +74,25 @@ def delete_patient(id):
     mysql.connection.commit()
     cur.close()
     return redirect(url_for('patients.patients'))
+
+@patients_bp.route('/search_patients', methods=['POST'])
+@admin_required
+def search_patients():
+    data = request.get_json()
+    query = data.get('query', '').strip()
+
+    try:
+        cur = mysql.connection.cursor()
+        sql_query = """
+            SELECT id, name, phone, email, address, note 
+            FROM patients 
+            WHERE is_deleted = 0 
+            AND (name LIKE %s OR phone LIKE %s OR email LIKE %s)
+        """
+        search_term = f"%{query}%"
+        cur.execute(sql_query, (search_term, search_term, search_term))
+        patients = cur.fetchall()
+        cur.close()
+        return jsonify({'patients': patients})
+    except mysql.connector.Error as err:
+        return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'}), 500

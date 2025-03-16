@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Sửa giao dịch{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Sửa giao dịch</h1>
+    <form method="POST" action="{{ url_for('finance.update_finance', id=finance[0]) }}">
+        <div class="mb-3">
+            <label for="transaction_date" class="form-label">Ngày giao dịch</label>
+            <input type="datetime-local" class="form-control" id="transaction_date" name="transaction_date" value="{{ finance[1] | strftime }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Số tiền</label>
+            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="{{ finance[2] }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="type" class="form-label">Loại</label>
+            <select class="form-control" id="type" name="type" required>
+                <option value="income" {% if finance[3] == 'income' %}selected{% endif %}>Thu nhập</option>
+                <option value="expense" {% if finance[3] == 'expense' %}selected{% endif %}>Chi phí</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Mô tả</label>
+            <input type="text" class="form-control" id="description" name="description" value="{{ finance[4] }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+        <a href="{{ url_for('finance.finance') }}" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>
+{% endblock %}

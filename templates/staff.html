@@ -3,8 +3,15 @@
 {% block content %}
 <div class="container-fluid">
     <h1 class="mt-4">Quản lý nhân viên</h1>
-    <a href="{{ url_for('staff.add_staff') }}" class="btn btn-primary mb-3">Thêm nhân viên mới</a>
-    <table class="table table-striped">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <a href="{{ url_for('staff.add_staff') }}" class="btn btn-primary">Thêm nhân viên mới</a>
+        </div>
+        <div class="col-md-6 text-end">
+            <input type="text" id="searchInput" class="form-control w-50 d-inline-block" placeholder="Tìm kiếm theo họ tên, số điện thoại, email...">
+        </div>
+    </div>
+    <table class="table table-striped" id="staffTable">
         <thead>
             <tr>
                 <th>ID</th>
@@ -12,11 +19,11 @@
                 <th>Số điện thoại</th>
                 <th>Email</th>
                 <th>Địa chỉ</th>
-                <th>Chức vụ</th>
+                <th>Trạng thái</th>
                 <th>Hành động</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="staffBody">
             {% for employee in staff %}
             <tr>
                 <td>{{ employee[0] }}</td>
@@ -34,4 +41,49 @@
         </tbody>
     </table>
 </div>
+
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.trim();
+
+    fetch("{{ url_for('staff.search_staff') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tbody = document.getElementById('staffBody');
+        tbody.innerHTML = ''; 
+
+        if (data.staff && data.staff.length > 0) {
+            data.staff.forEach(employee => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${employee[0]}</td>
+                    <td>${employee[1]}</td>
+                    <td>${employee[2]}</td>
+                    <td>${employee[3]}</td>
+                    <td>${employee[4]}</td>
+                    <td>${employee[5]}</td>
+                    <td>
+                        <a href="{{ url_for('staff.update_staff', id=0) }}".replace('0', employee[0]) class="btn btn-sm btn-warning">Sửa</a>
+                        <a href="{{ url_for('staff.delete_staff', id=0) }}".replace('0', employee[0]) class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">Không tìm thấy nhân viên nào</td></tr>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const tbody = document.getElementById('staffBody');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Có lỗi xảy ra khi tìm kiếm</td></tr>';
+    });
+});
+</script>
 {% endblock %}
