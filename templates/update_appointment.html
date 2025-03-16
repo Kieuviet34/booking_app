@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Cập nhật lịch hẹn{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Cập nhật lịch hẹn</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="patient_id" class="form-label">Bệnh nhân</label>
+            <select class="form-select" id="patient_id" name="patient_id" required>
+                {% for patient in patients %}
+                <option value="{{ patient[0] }}" {% if patient[0] == appointment[1] %}selected{% endif %}>{{ patient[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="staff_id" class="form-label">Nhân viên</label>
+            <select class="form-select" id="staff_id" name="staff_id">
+                <option value="">Không chọn</option>
+                {% for staff in staff_list %}
+                <option value="{{ staff[0] }}" {% if staff[0] == appointment[2] %}selected{% endif %}>{{ staff[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="start_time" class="form-label">Thời gian bắt đầu</label>
+            <input type="datetime-local" class="form-control" id="start_time" name="start_time" value="{{ appointment[3]|strftime('%Y-%m-%dT%H:%M') }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="end_time" class="form-label">Thời gian kết thúc</label>
+            <input type="datetime-local" class="form-control" id="end_time" name="end_time" value="{{ appointment[4]|strftime('%Y-%m-%dT%H:%M') }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">Trạng thái</label>
+            <select class="form-select" id="status" name="status">
+                <option value="new" {% if appointment[5] == 'new' %}selected{% endif %}>Mới</option>
+                <option value="confirmed" {% if appointment[5] == 'confirmed' %}selected{% endif %}>Đã xác nhận</option>
+                <option value="waiting" {% if appointment[5] == 'waiting' %}selected{% endif %}>Đang chờ</option>
+                <option value="in_progress" {% if appointment[5] == 'in_progress' %}selected{% endif %}>Đang thực hiện</option>
+                <option value="done" {% if appointment[5] == 'done' %}selected{% endif %}>Hoàn thành</option>
+                <option value="cancelled" {% if appointment[5] == 'cancelled' %}selected{% endif %}>Đã hủy</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="note" class="form-label">Ghi chú</label>
+            <textarea class="form-control" id="note" name="note">{{ appointment[7] }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="symptoms" class="form-label">Triệu chứng</label>
+            <textarea class="form-control" id="symptoms" name="symptoms">{{ appointment[6] }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+    </form>
+</div>
+{% endblock %}

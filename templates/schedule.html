@@ -42,7 +42,7 @@
     }
     .cell {
         position: relative;
-        height: 60px; 
+        height: 60px;
         border: 1px solid #ccc;
         box-sizing: border-box;
         overflow: hidden;
@@ -60,7 +60,6 @@
     .appointment-in_progress { background-color: #17a2b8; }
     .appointment-done { background-color: #6c757d; }
     .appointment-cancelled { background-color: #dc3545; }
-
     .appointment-block input {
         width: 100%;
         border: none;
@@ -74,33 +73,52 @@
         display: block;
         font-size: 0.8rem;
     }
+    /* CSS cho tooltip hiển thị bệnh án của bệnh nhân */
+    .patient-option {
+        position: relative;
+    }
+    .patient-option:hover::after {
+        content: attr(data-note);
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #333;
+        color: #fff;
+        padding: 5px;
+        border-radius: 3px;
+        white-space: pre-wrap;
+        z-index: 10;
+        width: 200px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <h1 class="mt-4">Xếp lịch theo chuyên khoa</h1>
-
-    <!-- Form lọc: chọn ngày và chuyên khoa -->
     <div class="mb-3">
-        <form action="{{ url_for('schedule') }}" method="GET" class="d-flex align-items-center gap-3">
+        <form action="{{ url_for('schedule.schedule') }}" method="GET" class="d-flex align-items-center gap-3">
             <div class="form-group">
-                <label for="date" class="form-label">Chọn ngày bắt đầu</label>
-                <input type="date" class="form-control" id="date" name="date"
-                       value="{{ selected_date }}" onchange="this.form.submit()">
+                <label for="category_id" class="form-label">Chuyên khoa</label>
+                <select class="form-select" id="category_id" name="category_id" onchange="this.form.submit()">
+                    <option value="">Chọn chuyên khoa</option>
+                    {% for cat in specialty_categories %}
+                    <option value="{{ cat[0] }}" {% if selected_category_id == cat[0]|string %}selected{% endif %}>
+                        {{ cat[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="form-group">
-                <label for="department" class="form-label">Chuyên khoa</label>
-                <select class="form-select" id="department" name="department" onchange="this.form.submit()">
-                    <option value="Khoa Khám bệnh đa khoa" {% if selected_department == 'Khoa Khám bệnh đa khoa' %}selected{% endif %}>
-                        Khoa Khám bệnh đa khoa
+                <label for="specialty_id" class="form-label">Khoa</label>
+                <select class="form-select" id="specialty_id" name="specialty_id" onchange="this.form.submit()">
+                    <option value="">Chọn khoa</option>
+                    {% for spec in specialties %}
+                    <option value="{{ spec[0] }}" {% if selected_specialty_id == spec[0]|string %}selected{% endif %}>
+                        {{ spec[1] }}
                     </option>
-                    <option value="Khoa Khám theo yêu cầu" {% if selected_department == 'Khoa Khám theo yêu cầu' %}selected{% endif %}>
-                        Khoa Khám theo yêu cầu
-                    </option>
-                    <option value="Trung tâm khám sức khỏe định kỳ" {% if selected_department == 'Trung tâm khám sức khỏe định kỳ' %}selected{% endif %}>
-                        Trung tâm khám sức khỏe định kỳ
-                    </option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group">
@@ -114,10 +132,14 @@
                     {% endfor %}
                 </select>
             </div>
+            <div class="form-group">
+                <label for="date" class="form-label">Chọn ngày bắt đầu</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()">
+            </div>
         </form>
     </div>
-
-    <!-- Form xếp lịch thủ công (tạo mới lịch hẹn) -->
+    
+    <!-- Form xếp lịch thủ công: tạo mới lịch hẹn -->
     <div class="mb-3">
         <h5>Xếp lịch thủ công</h5>
         <form method="POST">
@@ -144,7 +166,10 @@
                     <select class="form-select" id="patient_id" name="patient_id" required>
                         <option value="">Chọn bệnh nhân</option>
                         {% for p in patients %}
-                        <option value="{{ p[0] }}">{{ p[1] }}</option>
+                        <!-- Sử dụng data-note để hiển thị bệnh án khi hover -->
+                        <option value="{{ p[0] }}" class="patient-option" data-note="{{ p[2] }}">
+                            {{ p[1] }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -162,8 +187,8 @@
             </div>
         </form>
     </div>
-
-    <!-- Bảng thời khóa biểu -->
+    
+    <!-- Biểu đồ lịch -->
     {% set pixel_factor = 2 %} {# 1 phút = 2px #}
     <div class="calendar-container">
         <table class="timetable">
@@ -181,8 +206,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for hour in range(6, 18) %} {# Giả sử hiển thị từ 6h đến 18h #}
-                <!-- Row 1: :00 - :30 -->
+                {% for hour in range(6, 18) %}
+                <!-- Row: :00 - :30 -->
                 <tr>
                     <td class="time-label">{{ hour }}:00 - {{ hour }}:30</td>
                     {% for day in days_of_week %}
@@ -204,13 +229,10 @@
                                      style="top: {{ top_px }}px; height: {{ height_px }}px;"
                                      data-bs-toggle="modal"
                                      data-bs-target="#viewAppointmentModal-{{ appt[0] }}">
-                                    <!-- Input để nhập tên lịch hẹn -->
                                     <input type="text" value="{{ appt[2] }}" class="form-control form-control-sm" />
-                                    <!-- Hiển thị triệu chứng (nếu có) -->
                                     {% if appt[8] %}
                                     <small>{{ appt[8] }}</small>
                                     {% endif %}
-                                    <!-- Hiển thị tên bác sĩ (nếu có) -->
                                     {% if appt[4] %}
                                     <small>- {{ appt[4] }}</small>
                                     {% endif %}
@@ -221,7 +243,7 @@
                     </td>
                     {% endfor %}
                 </tr>
-                <!-- Row 2: :30 - :00 của giờ kế tiếp -->
+                <!-- Row: :30 - :00 của giờ kế tiếp -->
                 <tr>
                     <td class="time-label">{{ hour }}:30 - {{ hour + 1 }}:00</td>
                     {% for day in days_of_week %}
@@ -273,44 +295,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                {% if appt[7] == 'new' %}
-                <form method="POST">
-                    <input type="hidden" name="appointment_id" value="{{ appt[0] }}">
-                    <input type="hidden" name="patient_id" value="{{ appt[1] }}">
-                    <div class="mb-3">
-                        <label for="doctor_id_modal" class="form-label">Chọn bác sĩ</label>
-                        <select class="form-select" id="doctor_id_modal" name="doctor_id" required>
-                            <option value="">Chọn bác sĩ</option>
-                            {% for doc in doctors %}
-                            <option value="{{ doc[0] }}" {% if doc[0] == appt[3] %}selected{% endif %}>
-                                {{ doc[1] }} ({{ doc[2] }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="start_time_modal" class="form-label">Thời gian bắt đầu</label>
-                        <input type="datetime-local" class="form-control" id="start_time_modal" name="start_time"
-                               value="{{ appt[5]|datetime_local }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="end_time_modal" class="form-label">Thời gian kết thúc</label>
-                        <input type="datetime-local" class="form-control" id="end_time_modal" name="end_time"
-                               value="{{ appt[6]|datetime_local }}" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Xếp lịch</button>
-                </form>
-                {% else %}
-                <div>
-                    <p><strong>Bệnh nhân:</strong> {{ appt[2] }}</p>
-                    <p><strong>Bác sĩ:</strong> {{ appt[4] if appt[4] else "Chưa có bác sĩ" }}</p>
-                    <p><strong>Thời gian bắt đầu:</strong> {{ appt[5]|datetime_local }}</p>
-                    <p><strong>Thời gian kết thúc:</strong> {{ appt[6]|datetime_local }}</p>
-                    <p><strong>Trạng thái:</strong> {{ appt[7]|capitalize }}</p>
-                    <p><strong>Triệu chứng:</strong> {{ appt[8] if appt[8] else "Không có" }}</p>
-                    <p><strong>Ghi chú:</strong> {{ appt[9] if appt[9] else "Không có" }}</p>
-                </div>
-                {% endif %}
+                <p><strong>Bệnh nhân:</strong> {{ appt[2] }}</p>
+                <p><strong>Bác sĩ:</strong> {{ appt[4] if appt[4] else "Chưa có bác sĩ" }}</p>
+                <p><strong>Thời gian bắt đầu:</strong> {{ appt[5]|datetime_local }}</p>
+                <p><strong>Thời gian kết thúc:</strong> {{ appt[6]|datetime_local }}</p>
+                <p><strong>Trạng thái:</strong> {{ appt[7]|capitalize }}</p>
+                <p><strong>Triệu chứng:</strong> {{ appt[8] if appt[8] else "Không có" }}</p>
             </div>
         </div>
     </div>

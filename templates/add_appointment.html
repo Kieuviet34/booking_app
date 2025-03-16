@@ -7,6 +7,7 @@
         <div class="mb-3">
             <label for="patient_id" class="form-label">Bệnh nhân</label>
             <select class="form-select" id="patient_id" name="patient_id" required>
+                <option value="">Chọn bệnh nhân</option>
                 {% for patient in patients %}
                 <option value="{{ patient[0] }}">{{ patient[1] }}</option>
                 {% endfor %}
@@ -15,7 +16,7 @@
         <div class="mb-3">
             <label for="staff_id" class="form-label">Nhân viên</label>
             <select class="form-select" id="staff_id" name="staff_id">
-                <option value="">Không chọn</option>
+                <option value="">Chọn bác sĩ </option>
                 {% for staff in staff_list %}
                 <option value="{{ staff[0] }}">{{ staff[1] }}</option>
                 {% endfor %}
@@ -43,6 +44,10 @@
         <div class="mb-3">
             <label for="note" class="form-label">Ghi chú</label>
             <textarea class="form-control" id="note" name="note"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="symptoms" class="form-label">Triệu chứng</label>
+            <textarea class="form-control" id="symptoms" name="symptoms"></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Lưu</button>
     </form>

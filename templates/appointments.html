@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container-fluid">
     <h1 class="mt-4">Quản lý lịch hẹn</h1>
-    <a href="{{ url_for('add_appointment') }}" class="btn btn-primary mb-3">Thêm lịch hẹn mới</a>
+    <a href="{{ url_for('appointments.add_appointment') }}" class="btn btn-primary mb-3">Thêm lịch hẹn mới</a>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -28,8 +28,8 @@
                 <td>{{ appointment[5] }}</td>
                 <td>{{ appointment[6] }}</td>
                 <td>
-                    <a href="{{ url_for('update_appointment', id=appointment[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
-                    <a href="{{ url_for('delete_appointment', id=appointment[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                    <a href="{{ url_for('appointments.update_appointment', id=appointment[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
+                    <a href="{{ url_for('appointments.delete_appointment', id=appointment[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
                 </td>
             </tr>
             {% endfor %}

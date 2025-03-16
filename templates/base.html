@@ -11,9 +11,9 @@
 </head>
 <body>
     <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{{ url_for('dashboard') }}">Hospital Admin</a>
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{{ url_for('dashboard.dashboard') }}">Hospital Admin</a>
         <div class="navbar-nav">
-            <a class="nav-link px-3" href="{{ url_for('logout') }}">Đăng xuất</a>
+            <a class="nav-link px-3" href="{{ url_for('auth.logout') }}">Đăng xuất</a>
         </div>
     </header>
 
@@ -23,19 +23,22 @@
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                            <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('patients') }}">Bệnh nhân</a>
+                            <a class="nav-link" href="{{ url_for('patients.patients') }}">Bệnh nhân</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('staff') }}">Nhân viên</a>
+                            <a class="nav-link" href="{{ url_for('staff.staff') }}">Nhân viên</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('appointments') }}">Lịch hẹn</a>
+                            <a class="nav-link" href="{{ url_for('appointments.appointments') }}">Lịch hẹn</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('schedule') }}">Xếp lịch</a>
+                            <a class="nav-link" href="{{ url_for('schedule.schedule') }}">Xếp lịch</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('finance.finance') }}">Quản lí thu chi</a>
                         </li>
                     </ul>
                 </div>

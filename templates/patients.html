@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container-fluid">
     <h1 class="mt-4">Quản lý bệnh nhân</h1>
-    <a href="{{ url_for('add_patient') }}" class="btn btn-primary mb-3">Thêm bệnh nhân mới</a>
+    <a href="{{ url_for('patients.add_patient') }}" class="btn btn-primary mb-3">Thêm bệnh nhân mới</a>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -26,8 +26,8 @@
                 <td>{{ patient[4] }}</td>
                 <td>{{ patient[5] }}</td>
                 <td>
-                    <a href="{{ url_for('update_patient', id=patient[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
-                    <a href="{{ url_for('delete_patient', id=patient[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                    <a href="{{ url_for('patients.update_patient', id=patient[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
+                    <a href="{{ url_for('patients.delete_patient', id=patient[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
                 </td>
             </tr>
             {% endfor %}
