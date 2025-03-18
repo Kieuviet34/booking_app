@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
 import bcrypt
+from MySQLdb import IntegrityError, Error  # Import đúng các ngoại lệ từ MySQLdb
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -35,7 +36,7 @@ def login():
                 return jsonify({'success': True})
             else:
                 return jsonify({'error': 'Tên đăng nhập hoặc mật khẩu không đúng'})
-        except mysql.connector.Error as err:
+        except Error as err:  # Sử dụng Error từ MySQLdb thay vì mysql.connector.Error
             return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'})
     return render_template('login.html')
 
@@ -55,10 +56,11 @@ def register():
 
         try:
             cur = mysql.connection.cursor()
-            cur.execute("SELECT id FROM users WHERE username = %s and email = %s", (username, email))
+            # Kiểm tra xem username hoặc email đã tồn tại chưa
+            cur.execute("SELECT id FROM users WHERE username = %s OR email = %s", (username, email))
             if cur.fetchone():
                 cur.close()
-                return jsonify({'error': 'Tên đăng nhập đã tồn tại'})
+                return jsonify({'error': 'Tên đăng nhập hoặc email đã tồn tại'})
             cur.execute("""
                 INSERT INTO users (username, password, phone, email, address, first_name, last_name)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -66,7 +68,9 @@ def register():
             mysql.connection.commit()
             cur.close()
             return jsonify({'success': True})
-        except mysql.connector.Error as err:
+        except IntegrityError as err:  # Bắt lỗi khi vi phạm ràng buộc UNIQUE
+            return jsonify({'error': f'Lỗi cơ sở dữ liệu: Tên đăng nhập hoặc email đã tồn tại - {str(err)}'})
+        except Error as err:  # Bắt các lỗi cơ sở dữ liệu khác
             return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'})
     return render_template('register.html')
 

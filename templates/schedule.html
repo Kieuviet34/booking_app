@@ -73,7 +73,6 @@
         display: block;
         font-size: 0.8rem;
     }
-    /* CSS cho tooltip hiển thị bệnh án của bệnh nhân */
     .patient-option {
         position: relative;
     }
@@ -172,6 +171,15 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <label for="examination_category_id" class="form-label">Danh mục khám</label>
+                    <select class="form-select" id="examination_category_id" name="examination_category_id" required>
+                        <option value="">Chọn danh mục khám</option>
+                        {% for cat in examination_categories %}
+                        <option value="{{ cat[0] }}">{{ cat[1] }} - {{ cat[2] }} VND</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <label for="start_time" class="form-label">Thời gian bắt đầu</label>
                     <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
                 </div>
@@ -186,7 +194,7 @@
         </form>
     </div>
     
-    {% set pixel_factor = 2 %} <!-- 1 phút chia thành 2px -->
+    {% set pixel_factor = 2 %}
     <div class="calendar-container">
         <table class="timetable">
             <thead>
@@ -204,7 +212,6 @@
             </thead>
             <tbody>
                 {% for hour in range(6, 18) %}
-                <!-- Row: :00 - :30  chia thành 30 phút 1 row-->
                 <tr>
                     <td class="time-label">{{ hour }}:00 - {{ hour }}:30</td>
                     {% for day in days_of_week %}
@@ -240,7 +247,6 @@
                     </td>
                     {% endfor %}
                 </tr>
-                <!-- Row: :30 - :00 của giờ kế tiếp -->
                 <tr>
                     <td class="time-label">{{ hour }}:30 - {{ hour + 1 }}:00</td>
                     {% for day in days_of_week %}
@@ -297,6 +303,7 @@
                 <p><strong>Thời gian kết thúc:</strong> {{ appt[6]|datetime_local }}</p>
                 <p><strong>Trạng thái:</strong> {{ appt[7]|capitalize }}</p>
                 <p><strong>Triệu chứng:</strong> {{ appt[8] if appt[8] else "Không có" }}</p>
+                <p><strong>Danh mục khám:</strong> {{ appt[9] if appt[9] else "Chưa có" }}</p>
             </div>
         </div>
     </div>

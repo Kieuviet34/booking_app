@@ -9,6 +9,7 @@ from routes.staff import staff_bp
 from routes.appointments import appointments_bp
 from routes.schedule import schedule_bp
 from routes.finance import finance_bp
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 app.secret_key = 'ThoSanTreEmX2004'
@@ -65,5 +66,23 @@ def index():
     else:
         return redirect(url_for('auth.login'))
 
+def update_appointment_status():
+    with app.app_context(): 
+        cur = mysql.connection.cursor()
+        current_time = datetime.now()
+        cur.execute("""
+            UPDATE appointments 
+            SET status = 'done'
+            WHERE end_time <= %s AND status NOT IN ('done', 'cancelled')
+        """, (current_time,))
+        mysql.connection.commit()
+        cur.close()
+scheduler = BackgroundScheduler()
+scheduler.add_job(update_appointment_status, 'interval', minutes=1)
+scheduler.start()
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    try:
+        app.run(debug=True, use_reloader=False) 
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()

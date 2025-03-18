@@ -52,7 +52,7 @@ def schedule():
     for i in range(7):
         day_dt = selected_datetime + timedelta(days=i)
         weekday = day_dt.weekday()
-        is_open = weekday in [0, 1, 2, 3, 4, 5]  
+        is_open = weekday in [0, 1, 2, 3, 4, 5]
         days_of_week.append({
             'date': day_dt.strftime('%Y-%m-%d'),
             'display': day_dt.strftime('%a, %d/%m'),
@@ -70,10 +70,11 @@ def schedule():
 
     query = f"""
         SELECT a.id, a.note as appointment_title, p.name, a.staff_id, s.full_name, 
-               a.start_time, a.end_time, a.status, a.symptoms
+               a.start_time, a.end_time, a.status, a.symptoms, ec.name as examination_category
         FROM appointments a
         JOIN patients p ON a.patient_id = p.id
         LEFT JOIN staff s ON a.staff_id = s.id
+        LEFT JOIN examination_categories ec ON a.examination_category_id = ec.id
         WHERE a.start_time BETWEEN %s AND %s {status_filter} {doctor_filter}
     """
     cur.execute(query, tuple(params))
@@ -82,11 +83,15 @@ def schedule():
     cur.execute("SELECT id, name, note FROM patients WHERE is_deleted=0")
     patients = cur.fetchall()
 
+    cur.execute("SELECT id, name, price FROM examination_categories")
+    examination_categories = cur.fetchall()
+
     if request.method == 'POST':
         appointment_title = request.form['appointment_name']
         symptoms = request.form.get('symptoms', '')
         doctor_id_form = request.form['doctor_id']
         patient_id_form = request.form['patient_id']
+        examination_category_id = request.form['examination_category_id']
         start_time_form = datetime.strptime(request.form['start_time'], '%Y-%m-%dT%H:%M')
         end_time_form = datetime.strptime(request.form['end_time'], '%Y-%m-%dT%H:%M')
 
@@ -99,9 +104,9 @@ def schedule():
 
         if appointment_conflict == 0:
             cur.execute("""
-                INSERT INTO appointments (note, patient_id, staff_id, start_time, end_time, status, symptoms)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (appointment_title, patient_id_form, doctor_id_form, start_time_form, end_time_form, 'confirmed', symptoms))
+                INSERT INTO appointments (note, patient_id, staff_id, start_time, end_time, status, symptoms, examination_category_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (appointment_title, patient_id_form, doctor_id_form, start_time_form, end_time_form, 'confirmed', symptoms, examination_category_id))
             mysql.connection.commit()
         else:
             return render_template('schedule.html',
@@ -112,6 +117,7 @@ def schedule():
                                    selected_specialty_id=selected_specialty_id,
                                    doctors=doctors,
                                    patients=patients,
+                                   examination_categories=examination_categories,
                                    selected_date=selected_date,
                                    statuses=statuses,
                                    selected_status=selected_status,
@@ -127,6 +133,7 @@ def schedule():
                            selected_specialty_id=selected_specialty_id,
                            doctors=doctors,
                            patients=patients,
+                           examination_categories=examination_categories,
                            selected_date=selected_date,
                            statuses=statuses,
                            selected_status=selected_status,
