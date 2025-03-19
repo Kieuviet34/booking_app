@@ -140,6 +140,9 @@
     
     <div class="mb-3">
         <h5>Xếp lịch thủ công</h5>
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
         <form method="POST">
             <div class="row">
                 <div class="col-md-3">
@@ -148,7 +151,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="symptoms" class="form-label">Triệu chứng</label>
-                    <input type="text" class="form-control" id="symptoms" name="symptoms">
+                    <input type="text" class="form-control" id="symptoms" name="symptoms" autocomplete="off">
                 </div>
                 <div class="col-md-3">
                     <label for="doctor_id_form" class="form-label">Bác sĩ</label>
@@ -164,7 +167,7 @@
                     <select class="form-select" id="patient_id" name="patient_id" required>
                         <option value="">Chọn bệnh nhân</option>
                         {% for p in patients %}
-                        <option value="{{ p[0] }}" class="patient-option" data-note="{{ p[2] }}">
+                        <option value="{{ p[0] }}" class="patient-option" data-note="{{ p[2] }}" data-symptoms="{{ p[3] }}">
                             {{ p[1] }}
                         </option>
                         {% endfor %}
@@ -181,11 +184,13 @@
                 </div>
                 <div class="col-md-3">
                     <label for="start_time" class="form-label">Thời gian bắt đầu</label>
-                    <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                    <input type="datetime-local" class="form-control" id="start_time" name="start_time" required min="{{ current_time_str }}">
+                    <small class="text-muted">Từ 6:00 AM đến 6:00 PM</small>
                 </div>
                 <div class="col-md-3">
                     <label for="end_time" class="form-label">Thời gian kết thúc</label>
-                    <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                    <input type="datetime-local" class="form-control" id="end_time" name="end_time" required min="{{ current_time_str }}">
+                    <small class="text-muted">Từ 6:00 AM đến 6:00 PM</small>
                 </div>
                 <div class="col-md-3 mt-4">
                     <button type="submit" class="btn btn-primary">Xếp lịch</button>
@@ -318,6 +323,12 @@
             document.body.classList.remove('modal-open');
             document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
         });
+    });
+
+    document.getElementById('patient_id').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const symptoms = selectedOption.getAttribute('data-symptoms') || '';
+        document.getElementById('symptoms').value = symptoms;
     });
 </script>
 {% endblock %}

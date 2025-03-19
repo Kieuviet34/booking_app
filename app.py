@@ -1,6 +1,5 @@
 from flask import Flask, session, redirect, url_for, render_template
 from flask_mysqldb import MySQL
-import bcrypt
 from datetime import datetime
 from routes.auth import auth_bp
 from routes.dashboard import dashboard_bp
@@ -51,7 +50,7 @@ def datetime_vn(value):
 
 @app.template_filter('datetime_local')
 def datetime_local_filter(value):
-    return value.strftime('%Y-%m-%dT%H:%M')
+    return value.strftime('"%d/%m/%Y %H:%M"')
 
 @app.template_filter('datetime_combine')
 def datetime_combine_filter(date_str, hour, minute=0):

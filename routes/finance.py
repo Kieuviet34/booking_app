@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
-
+from MySQLdb import IntegrityError, Error 
 finance_bp = Blueprint('finance', __name__)
 
 mysql = MySQL()
@@ -90,7 +90,7 @@ def search_finance():
         finances = cur.fetchall()
         cur.close()
         return jsonify({'finances': [list(f) for f in finances]})
-    except mysql.connector.Error as err:
+    except Error as err:
         return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'}), 500
 
 @finance_bp.route('/export_finance')

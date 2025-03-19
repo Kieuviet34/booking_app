@@ -24,6 +24,10 @@
             <label for="note" class="form-label">Ghi chú</label>
             <textarea class="form-control" id="note" name="note">{{ patient[5] }}</textarea>
         </div>
+        <div class="mb-3">
+            <label for="symptoms" class="form-label">Triệu chứng</label>
+            <textarea class="form-control" id="symptoms" name="symptoms">{{ patient[6] if patient[6] else '' }}</textarea>
+        </div>
         <button type="submit" class="btn btn-primary">Cập nhật</button>
     </form>
 </div>

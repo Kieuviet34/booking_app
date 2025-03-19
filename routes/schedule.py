@@ -15,9 +15,38 @@ def admin_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+def update_appointment_status():
+    cur = mysql.connection.cursor()
+    current_time = datetime.now()
+
+    cur.execute("""
+        SELECT a.id, ec.price
+        FROM appointments a
+        JOIN examination_categories ec ON a.examination_category_id = ec.id
+        WHERE a.end_time < %s AND a.status != 'done'
+    """, (current_time,))
+    appointments_to_update = cur.fetchall()
+
+    for appointment in appointments_to_update:
+        appointment_id = appointment[0]
+        price = appointment[1]
+        cur.execute("""
+            UPDATE appointments
+            SET status = 'done'
+            WHERE id = %s
+        """, (appointment_id,))
+
+        cur.execute("""
+            INSERT INTO finances (transaction_date, amount, type, description)
+            VALUES (%s, %s, 'income', %s)
+        """, (current_time, price, f"Thu nhập từ lịch hẹn ID {appointment_id}"))
+        mysql.connection.commit()
+    cur.close()
+
 @schedule_bp.route('/schedule', methods=['GET', 'POST'])
 @admin_required
 def schedule():
+    update_appointment_status()
     cur = mysql.connection.cursor()
     statuses = ['new', 'confirmed', 'waiting', 'in_progress', 'done', 'cancelled']
     selected_status = request.args.get('status', 'all')
@@ -80,11 +109,13 @@ def schedule():
     cur.execute(query, tuple(params))
     appointments = cur.fetchall()
 
-    cur.execute("SELECT id, name, note FROM patients WHERE is_deleted=0")
+    cur.execute("SELECT id, name, note, symptom FROM patients WHERE is_deleted=0")
     patients = cur.fetchall()
 
     cur.execute("SELECT id, name, price FROM examination_categories")
     examination_categories = cur.fetchall()
+
+    current_time_str = datetime.now().strftime('%Y-%m-%dT%H:%M')
 
     if request.method == 'POST':
         appointment_title = request.form['appointment_name']
@@ -95,22 +126,34 @@ def schedule():
         start_time_form = datetime.strptime(request.form['start_time'], '%Y-%m-%dT%H:%M')
         end_time_form = datetime.strptime(request.form['end_time'], '%Y-%m-%dT%H:%M')
 
-        cur.execute("""
-            SELECT COUNT(*) FROM appointments
-            WHERE staff_id = %s
-              AND ((start_time <= %s AND end_time >= %s) OR (start_time <= %s AND end_time >= %s))
-        """, (doctor_id_form, start_time_form, start_time_form, end_time_form, end_time_form))
-        appointment_conflict = cur.fetchone()[0]
+        current_time = datetime.now()
+        start_hour = start_time_form.hour
+        end_hour = end_time_form.hour
 
-        if appointment_conflict == 0:
-            cur.execute("""
-                INSERT INTO appointments (note, patient_id, staff_id, start_time, end_time, status, symptoms, examination_category_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (appointment_title, patient_id_form, doctor_id_form, start_time_form, end_time_form, 'confirmed', symptoms, examination_category_id))
-            mysql.connection.commit()
+        if start_time_form < current_time:
+            error = "Không thể đặt lịch cho thời gian đã qua."
+        elif start_hour < 6 or start_hour >= 18 or end_hour < 6 or end_hour > 18:
+            error = "Thời gian đặt lịch phải từ 6:00 AM đến 6:00 PM."
         else:
+            cur.execute("""
+                SELECT COUNT(*) FROM appointments
+                WHERE staff_id = %s
+                  AND ((start_time <= %s AND end_time >= %s) OR (start_time <= %s AND end_time >= %s))
+            """, (doctor_id_form, start_time_form, start_time_form, end_time_form, end_time_form))
+            appointment_conflict = cur.fetchone()[0]
+
+            if appointment_conflict == 0:
+                cur.execute("""
+                    INSERT INTO appointments (note, patient_id, staff_id, start_time, end_time, status, symptoms, examination_category_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (appointment_title, patient_id_form, doctor_id_form, start_time_form, end_time_form, 'confirmed', symptoms, examination_category_id))
+                mysql.connection.commit()
+            else:
+                error = "Bác sĩ không trống trong khung giờ này."
+
+        if 'error' in locals():
             return render_template('schedule.html',
-                                   error="Bác sĩ không trống trong khung giờ này",
+                                   error=error,
                                    specialty_categories=specialty_categories,
                                    selected_category_id=selected_category_id,
                                    specialties=specialties,
@@ -123,7 +166,8 @@ def schedule():
                                    selected_status=selected_status,
                                    doctor_id=doctor_id,
                                    days_of_week=days_of_week,
-                                   appointments=appointments)
+                                   appointments=appointments,
+                                   current_time_str=current_time_str)  # Truyền current_time_str khi có lỗi
 
     cur.close()
     return render_template('schedule.html',
@@ -139,4 +183,5 @@ def schedule():
                            selected_status=selected_status,
                            doctor_id=doctor_id,
                            days_of_week=days_of_week,
-                           appointments=appointments)
+                           appointments=appointments,
+                           current_time_str=current_time_str)  # Truyền current_time_str cho template

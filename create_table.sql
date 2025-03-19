@@ -73,7 +73,7 @@ CREATE TABLE examination_categories (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Bảng appointments (đã cập nhật)
+-- Bảng appointments 
 CREATE TABLE appointments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_id INT NOT NULL,
@@ -122,21 +122,3 @@ CREATE TABLE finances (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Trigger tự động ghi nhận thu nhập
-DELIMITER //
-CREATE TRIGGER after_appointment_done
-AFTER UPDATE ON appointments
-FOR EACH ROW
-BEGIN
-  IF NEW.status = 'done' AND OLD.status != 'done' AND NEW.examination_category_id IS NOT NULL THEN
-    INSERT INTO finances (transaction_date, amount, type, description)
-    SELECT 
-      NOW(),
-      ec.price,
-      'income',
-      CONCAT('Thu nhập từ lịch hẹn ID ', NEW.id)
-    FROM examination_categories ec
-    WHERE ec.id = NEW.examination_category_id;
-  END IF;
-END;//
-DELIMITER ;

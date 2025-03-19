@@ -17,9 +17,9 @@
                 <th>ID</th>
                 <th>Tên</th>
                 <th>Số điện thoại</th>
-                <th>Email</th>
-                <th>Địa chỉ</th>
                 <th>Ghi chú</th>
+                <th>Địa chỉ</th>
+                <th>Triệu chứng</th>
                 <th>Hành động</th>
             </tr>
         </thead>
@@ -29,9 +29,9 @@
                 <td>{{ patient[0] }}</td>
                 <td>{{ patient[1] }}</td>
                 <td>{{ patient[2] }}</td>
-                <td>{{ patient[3] }}</td>
-                <td>{{ patient[4] }}</td>
                 <td>{{ patient[5] }}</td>
+                <td>{{ patient[4] }}</td>
+                <td>{{ patient[6] }}</td>
                 <td>
                     <a href="{{ url_for('patients.update_patient', id=patient[0]) }}" class="btn btn-sm btn-warning">Sửa</a>
                     <a href="{{ url_for('patients.delete_patient', id=patient[0]) }}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
@@ -65,9 +65,9 @@ document.getElementById('searchInput').addEventListener('input', function() {
                     <td>${patient[0]}</td>
                     <td>${patient[1]}</td>
                     <td>${patient[2]}</td>
-                    <td>${patient[3]}</td>
-                    <td>${patient[4]}</td>
                     <td>${patient[5]}</td>
+                    <td>${patient[4]}</td>
+                    <td>${patient[6]}</td>
                     <td>
                         <a href="{{ url_for('patients.update_patient', id=0) }}".replace('0', patient[0]) class="btn btn-sm btn-warning">Sửa</a>
                         <a href="{{ url_for('patients.delete_patient', id=0) }}".replace('0', patient[0]) class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>

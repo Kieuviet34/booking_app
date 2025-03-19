@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
 import bcrypt
-from MySQLdb import IntegrityError, Error  # Import đúng các ngoại lệ từ MySQLdb
+from MySQLdb import IntegrityError, Error 
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -36,7 +36,7 @@ def login():
                 return jsonify({'success': True})
             else:
                 return jsonify({'error': 'Tên đăng nhập hoặc mật khẩu không đúng'})
-        except Error as err:  # Sử dụng Error từ MySQLdb thay vì mysql.connector.Error
+        except Error as err:  
             return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'})
     return render_template('login.html')
 
@@ -68,9 +68,9 @@ def register():
             mysql.connection.commit()
             cur.close()
             return jsonify({'success': True})
-        except IntegrityError as err:  # Bắt lỗi khi vi phạm ràng buộc UNIQUE
+        except IntegrityError as err: 
             return jsonify({'error': f'Lỗi cơ sở dữ liệu: Tên đăng nhập hoặc email đã tồn tại - {str(err)}'})
-        except Error as err:  # Bắt các lỗi cơ sở dữ liệu khác
+        except Error as err: 
             return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'})
     return render_template('register.html')
 
@@ -84,3 +84,47 @@ def logout():
     session.pop('username', None)
     session.pop('admin', None)
     return redirect(url_for('auth.login'))
+@auth_bp.route('/edit', methods=['GET', 'POST'])
+def edit_account():
+    # Kiểm tra xem người dùng đã đăng nhập chưa
+    if 'username' not in session:
+        return redirect(url_for('auth.login'))
+
+    cur = mysql.connection.cursor()
+    username = session['username']
+
+    # Xử lý khi người dùng gửi form (POST)
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        phone = request.form['phone']
+        address = request.form['address']
+        new_password = request.form.get('new_password', '')
+
+        # Nếu có mật khẩu mới, cập nhật cả mật khẩu
+        if new_password:
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            cur.execute("""
+                UPDATE users
+                SET first_name = %s, last_name = %s, email = %s, phone = %s, address = %s, password = %s
+                WHERE username = %s
+            """, (first_name, last_name, email, phone, address, hashed_password, username))
+        # Nếu không có mật khẩu mới, chỉ cập nhật thông tin khác
+        else:
+            cur.execute("""
+                UPDATE users
+                SET first_name = %s, last_name = %s, email = %s, phone = %s, address = %s
+                WHERE username = %s
+            """, (first_name, last_name, email, phone, address, username))
+
+        mysql.connection.commit()
+        cur.close()
+        return redirect(url_for('dashboard.dashboard'))  # Chuyển hướng sau khi cập nhật
+
+    # Hiển thị form (GET)
+    cur.execute("SELECT first_name, last_name, email, phone, address FROM users WHERE username = %s", (username,))
+    user = cur.fetchone()
+    cur.close()
+
+    return render_template('edit_account.html', user=user)

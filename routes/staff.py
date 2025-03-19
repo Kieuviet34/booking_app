@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
-
+from MySQLdb import IntegrityError, Error 
 staff_bp = Blueprint('staff', __name__)
 
 mysql = MySQL()
@@ -102,5 +102,5 @@ def search_staff():
         staff_list = cur.fetchall()
         cur.close()
         return jsonify({'staff': staff_list})
-    except mysql.connector.Error as err:
+    except Error as err:
         return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'}), 500

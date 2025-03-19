@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
-
+from MySQLdb import IntegrityError, Error 
 patients_bp = Blueprint('patients', __name__)
 
 mysql = MySQL()
@@ -18,7 +18,7 @@ def admin_required(f):
 @admin_required
 def patients():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT id, name, phone, email, address, note FROM patients WHERE is_deleted = 0")
+    cur.execute("SELECT id, name, phone, email, address, note, symptom FROM patients WHERE is_deleted = 0")
     patients = cur.fetchall()
     cur.close()
     return render_template('patients.html', patients=patients)
@@ -32,11 +32,12 @@ def add_patient():
         email = request.form['email']
         address = request.form['address']
         note = request.form['note']
+        symptoms = request.form.get('symptoms', '') 
         cur = mysql.connection.cursor()
         cur.execute("""
-            INSERT INTO patients (name, phone, email, address, note) 
-            VALUES (%s, %s, %s, %s, %s)
-        """, (name, phone, email, address, note))
+            INSERT INTO patients (name, phone, email, address, note, symptom) 
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (name, phone, email, address, note, symptoms))
         mysql.connection.commit()
         cur.close()
         return redirect(url_for('patients.patients'))
@@ -52,16 +53,17 @@ def update_patient(id):
         email = request.form['email']
         address = request.form['address']
         note = request.form['note']
+        symptoms = request.form.get('symptoms', '') 
         cur.execute("""
             UPDATE patients 
-            SET name=%s, phone=%s, email=%s, address=%s, note=%s 
+            SET name=%s, phone=%s, email=%s, address=%s, note=%s, symptom=%s 
             WHERE id=%s
-        """, (name, phone, email, address, note, id))
+        """, (name, phone, email, address, note, symptoms, id))
         mysql.connection.commit()
         cur.close()
         return redirect(url_for('patients.patients'))
     else:
-        cur.execute("SELECT * FROM patients WHERE id=%s", (id,))
+        cur.execute("SELECT id, name, phone, email, address, note, symptom FROM patients WHERE id=%s", (id,))
         patient = cur.fetchone()
         cur.close()
         return render_template('update_patient.html', patient=patient)
@@ -84,7 +86,7 @@ def search_patients():
     try:
         cur = mysql.connection.cursor()
         sql_query = """
-            SELECT id, name, phone, email, address, note 
+            SELECT id, name, phone, email, address, note, symptom
             FROM patients 
             WHERE is_deleted = 0 
             AND (name LIKE %s OR phone LIKE %s OR email LIKE %s)
@@ -94,5 +96,5 @@ def search_patients():
         patients = cur.fetchall()
         cur.close()
         return jsonify({'patients': patients})
-    except mysql.connector.Error as err:
-        return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'}), 500
+    except Error as err:
+        return jsonify({'error': f'Lỗi cơ sở dữ liệu: {str(err)}'})
