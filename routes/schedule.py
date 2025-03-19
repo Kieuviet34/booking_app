@@ -167,7 +167,7 @@ def schedule():
                                    doctor_id=doctor_id,
                                    days_of_week=days_of_week,
                                    appointments=appointments,
-                                   current_time_str=current_time_str)  # Truyền current_time_str khi có lỗi
+                                   current_time_str=current_time_str) 
 
     cur.close()
     return render_template('schedule.html',
@@ -184,4 +184,4 @@ def schedule():
                            doctor_id=doctor_id,
                            days_of_week=days_of_week,
                            appointments=appointments,
-                           current_time_str=current_time_str)  # Truyền current_time_str cho template
+                           current_time_str=current_time_str) 

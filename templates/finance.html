@@ -106,7 +106,7 @@ document.getElementById('exportExcel').addEventListener('click', function() {
         })));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Finances");
-        XLSX.writeFile(wb, "finances_export.xlsx");
+        XLSX.writeFile(wb, "finances_export_" + new Date().toISOString().replace(/[-:]/g, '').slice(0,14) + ".xlsx");
     })
     .catch(error => {
         console.error('Error:', error);
